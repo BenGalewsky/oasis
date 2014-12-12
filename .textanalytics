@@ -1,0 +1,9 @@
+#Tue Dec 09 15:34:24 CST 2014
+srcTextAnalyticsPath=[P]textAnalytics/src
+general.provenance=true
+pagination.isEnabled=true
+tamTextAnalyticsPath=[P]textAnalytics/bin
+searchPath.dataPath=[W]/Oasis
+UseModularAQL=true
+pagination.numFilesPerPage=50
+langWare.tokenizerChoice=1

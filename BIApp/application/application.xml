@@ -1,0 +1,8 @@
+<application-template xmlns="http://biginsights.ibm.com/application" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <name>Oasis</name>
+    <assets>
+        <asset id="Oasis" type="WORKFLOW"/>
+    </assets>
+    <imagePath>defaultApp_L.png</imagePath>
+    <categories>STA Group</categories>
+</application-template>

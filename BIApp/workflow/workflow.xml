@@ -1,0 +1,21 @@
+<workflow-app name="wfapp" xmlns="uri:oozie:workflow:0.2">
+    <start to="generateDistances"/>
+    <action name="generateDistances">
+        <pig>
+            <job-tracker>${jobTracker}</job-tracker>
+            <name-node>${nameNode}</name-node>
+            <prepare>
+                <delete path="hdfs://bi-hadoop-prod-334.services.dal.bluemix.net:9000/tmp/tractGroups" />
+                <delete path="hdfs://bi-hadoop-prod-334.services.dal.bluemix.net:9000/tmp/licenses" />
+            </prepare>
+            <script>businessLicense.pig</script>
+        </pig>
+        <ok to="end" />
+        <error to="kill" />
+    </action>
+    <!-- add actions here -->
+    <kill name="kill">
+        <message>error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+    </kill>
+    <end name="end"/>
+</workflow-app>

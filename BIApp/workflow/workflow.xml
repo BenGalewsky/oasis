@@ -4,11 +4,24 @@
         <pig>
             <job-tracker>${jobTracker}</job-tracker>
             <name-node>${nameNode}</name-node>
-            <prepare>
-                <delete path="hdfs://bi-hadoop-prod-334.services.dal.bluemix.net:9000/tmp/tractGroups" />
-                <delete path="hdfs://bi-hadoop-prod-334.services.dal.bluemix.net:9000/tmp/licenses" />
-            </prepare>
+            <configuration>
+                <property>
+                    <name>censusTracts</name>
+                    <value>/data/censusTracts.csv</value>
+                </property>
+                <property>
+                    <name>businessLicenses</name>
+                    <value>/data/businessLicense.csv</value>
+                </property>
+                <property>
+                    <name>resultDir</name>
+                    <value>/tmp</value>
+                </property>
+            </configuration>
             <script>businessLicense.pig</script>
+            <param>censusTracts=/data/censusTracts.csv</param>
+            <param>resultDir=/tmp</param>
+            <param>businessLicenses=/data/businessLicense.csv</param>
         </pig>
         <ok to="end" />
         <error to="kill" />

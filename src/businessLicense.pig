@@ -1,7 +1,7 @@
 -- TODO: Add Pig content here
 --REGISTER myudfs.jar;
 
-tractsWithHeader = load '/data/censusTracts.csv' USING PigStorage(',') as (
+tractsWithHeader = load '$censusTracts' USING PigStorage(',') as (
 STATE:chararray,
 GEOID:chararray,
 POP10:int,
@@ -21,9 +21,9 @@ TRACT:chararray
 -- Remove Header
 tracts = FILTER tractsWithHeader BY STATE != 'STATE' AND POP10 > 0;
 
- store tracts into '/tmp/tractGroups' using PigStorage(',');
+ store tracts into '$resultDir/tractGroups' using PigStorage(',');
 
-licensesWithHeader = load '/data/businessLicense.csv' USING PigStorage(',') as (
+licensesWithHeader = load '$businessLicenses' USING PigStorage(',') as (
 	ID:chararray,
 	LICENSE_ID:int,
 	ACCOUNT_NUMBER:int,
@@ -57,14 +57,35 @@ licensesWithHeader = load '/data/businessLicense.csv' USING PigStorage(',') as (
 	LOCATION:chararray
 );
 
-licenses = FILTER licensesWithHeader BY (ID != 'ID') AND (LATITUDE is not null) AND (LONGITUDE is not null) ;
+-- Filter out headers, bad data and expired licenses
+licenses = FILTER licensesWithHeader BY 
+	(ID != 'ID') 
+	AND (LATITUDE is not null) AND (LONGITUDE is not null)
+	AND LICENSE_STATUS == 'AAI'
+	AND  GetYear(ToDate(LICENSE_TERM_EXPIRATION_DATE, 'MM/dd/YYYY')) >= 2014;
 
+
+-- Create the study of the cartisian product of licenses for every tract
 study = CROSS licenses, tracts;
 
+-- Generate a result showing distance from each tract to each business
 rslt = foreach study GENERATE TRACT, POP10, LICENSE_DESCRIPTION, com.stagrp.bigData.gis.DistanceLatLong(INTPTLAT,INTPTLONG, LATITUDE, LONGITUDE, 'M' );
 
+-- Generate interesting slices
 oneMile =  FILTER rslt BY $3 < 1.0;
 threeMile =  FILTER rslt BY $3 < 3.0;
 
+tractGroups = GROUP oneMile BY (TRACT, LICENSE_DESCRIPTION);
+rslt = FOREACH tractGroups GENERATE FLATTEN($0), COUNT($1);
 
- store oneMile into '/tmp/licenses' using PigStorage(',');
+oneMileData = JOIN rslt BY $0, tracts BY TRACT;
+-- DUMP oneMileData;
+store oneMileData into '$resultDir/oneMile' using PigStorage(',');
+
+tractGroups = GROUP threeMile BY (TRACT, LICENSE_DESCRIPTION);
+rslt = FOREACH tractGroups GENERATE FLATTEN($0), COUNT($1);
+
+threeMileData = JOIN rslt BY $0, tracts BY TRACT;
+store threeMileData into '$resultDir/threeMile' using PigStorage(',');
+
+

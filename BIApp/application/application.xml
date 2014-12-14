@@ -3,6 +3,6 @@
     <assets>
         <asset id="Oasis" type="WORKFLOW"/>
     </assets>
-    <imagePath>defaultApp_L.png</imagePath>
+    <imagePath>staGrp.jpg</imagePath>
     <categories>STA Group</categories>
 </application-template>

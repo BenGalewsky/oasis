@@ -31,27 +31,30 @@ access = FOREACH tractGroups GENERATE FLATTEN($0),
 	SUM($1.distance) AS total, 
 	SUM($1.accessibility) AS accessibility, 
 	SUM($1.accessibility2) AS accessibility2; 
+	
+STORE access INTO 'output/tracts' USING PigStorage(',');
 
-tractMap = CommunityAreaReader(
-				'data/Tract_to_Community_Area_Equivalency_FileCLEAN.csv', 
-				'data/CommAreas.csv');
-				
-accessWithCommunityAreas = JOIN access BY TRACT, tractMap BY TRACT_CODE;				
+--tractMap = CommunityAreaReader(
+--				'data/Tract_to_Community_Area_Equivalency_File.csv', 
+--				'data/CommunityAreas.csv');
+--			
+--				
+--accessWithCommunityAreas = JOIN access BY TRACT, tractMap BY TRACT_CODE;				
 			
-communityAreaGroups = GROUP accessWithCommunityAreas BY (COMAREA_ID, COMMUNITY, LICENSE_DESCRIPTION);
-
-communityAccess = FOREACH communityAreaGroups GENERATE FLATTEN($0), 
-	AVG($1.accessibility), 
-	MIN($1.accessibility), 
-	MAX($1.accessibility), 
-	AVG($1.accessibility2),
-	MIN($1.accessibility2), 
-	MAX($1.accessibility2); 
-	
-	
-STORE communityAccess INTO 'output/access' USING PigStorage(',');
-STORE tractGroups INTO 'output/groups' USING PigStorage(',');
-STORE tractMap INTO 'output/maps' USING PigStorage(',');
-
-
+--communityAreaGroups = GROUP accessWithCommunityAreas BY (COMAREA_ID, COMMUNITY, LICENSE_DESCRIPTION);
+--
+--communityAccess = FOREACH communityAreaGroups GENERATE FLATTEN($0), 
+--	AVG($1.accessibility), 
+--	MIN($1.accessibility), 
+--	MAX($1.accessibility), 
+--	AVG($1.accessibility2),
+--	MIN($1.accessibility2), 
+--	MAX($1.accessibility2); 
+--	
+--	
+--STORE communityAccess INTO 'output/access' USING PigStorage(',');
+--STORE tractGroups INTO 'output/groups' USING PigStorage(',');
+--STORE tractMap INTO 'output/maps' USING PigStorage(',');
+--
+--
 

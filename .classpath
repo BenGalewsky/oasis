@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" output="BIApp/workflow/lib" path="src"/>
 	<classpathentry kind="con" path="com.ibm.biginsights.project.BIGINSIGHTS_LIBS_CONTAINER/V3.0.0.1"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="C:/dev/BlueMix/oasis/lib/piggybank-0.12.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

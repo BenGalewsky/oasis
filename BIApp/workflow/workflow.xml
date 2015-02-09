@@ -1,6 +1,6 @@
 <workflow-app name="wfapp" xmlns="uri:oozie:workflow:0.2">
-    <start to="generateDistances"/>
-    <action name="generateDistances">
+    <start to="SimpleAction" />
+    <action name="SimpleAction">
         <pig>
             <job-tracker>${jobTracker}</job-tracker>
             <name-node>${nameNode}</name-node>
@@ -18,7 +18,7 @@
                     <value>/tmp</value>
                 </property>
             </configuration>
-            <script>businessLicense.pig</script>
+            <script>Simple.pig</script>
             <param>censusTracts=/data/censusTracts.csv</param>
             <param>resultDir=/tmp</param>
             <param>businessLicenses=/data/businessLicense.csv</param>

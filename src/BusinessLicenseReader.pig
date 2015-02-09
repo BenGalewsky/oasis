@@ -1,6 +1,6 @@
 DEFINE BusinessLicenseReader(filename, groceryFilename) RETURNS licenses{
 	
-	licensesWithHeader = load '$filename' USING PigStorage(',') as (
+	licensesWithHeader = load '$filename' USING org.apache.pig.piggybank.storage.CSVExcelStorage as (
 	ID:chararray,
 	LICENSE_ID:int,
 	ACCOUNT_NUMBER:int,
@@ -38,10 +38,14 @@ DEFINE BusinessLicenseReader(filename, groceryFilename) RETURNS licenses{
 origLicenses = FILTER licensesWithHeader BY 
 	(ID != 'ID') 
 	AND (LATITUDE is not null) AND (LONGITUDE is not null)
-	AND LICENSE_STATUS == 'AAI'
-	AND  GetYear(ToDate(LICENSE_TERM_EXPIRATION_DATE, 'MM/dd/YYYY')) >= 2014;
+--	AND LICENSE_STATUS == 'AAI'
+--	AND (LICENSE_TERM_EXPIRATION_DATE is not null AND LICENSE_TERM_EXPIRATION_DATE != '') 
+--	AND (LICENSE_TERM_START_DATE is not null AND LICENSE_TERM_START_DATE != '')
+--	AND  DaysBetween(ToDate(LICENSE_TERM_EXPIRATION_DATE, 'MM/dd/YYYY'), ToDate('02/09/2015', 'MM/dd/YYYY')) > 0 
+--	AND  DaysBetween(ToDate(LICENSE_TERM_START_DATE, 'MM/dd/YYYY'), ToDate('02/09/2015', 'MM/dd/YYYY')) < 0;
+;
 
-groceriesWithHeader = load '$groceryFilename' USING PigStorage(',') as (
+groceriesWithHeader = load '$groceryFilename' USING org.apache.pig.piggybank.storage.CSVExcelStorage as (
 	G_STORE_NAME:chararray,	
 	G_LICENSE_ID:int,	
 	G_ACCOUNT_NUMBER:int,	

@@ -34,16 +34,21 @@ DEFINE BusinessLicenseReader(filename, groceryFilename) RETURNS licenses{
 	LOCATION:chararray
 );
 
+
 -- Filter out headers, bad data and expired licenses
 origLicenses = FILTER licensesWithHeader BY 
 	(ID != 'ID') 
 	AND (LATITUDE is not null) AND (LONGITUDE is not null)
 --	AND LICENSE_STATUS == 'AAI'
---	AND (LICENSE_TERM_EXPIRATION_DATE is not null AND LICENSE_TERM_EXPIRATION_DATE != '') 
---	AND (LICENSE_TERM_START_DATE is not null AND LICENSE_TERM_START_DATE != '')
+	AND (LICENSE_TERM_EXPIRATION_DATE is not null AND SIZE(REGEX_EXTRACT_ALL(LICENSE_TERM_EXPIRATION_DATE, '(\\d\\d/\\d\\d/\\d\\d\\d\\d)')) == 1)
+	AND (LICENSE_TERM_START_DATE is not null AND SIZE(REGEX_EXTRACT_ALL(LICENSE_TERM_START_DATE, '(\\d\\d/\\d\\d/\\d\\d\\d\\d)')) == 1)
 --	AND  DaysBetween(ToDate(LICENSE_TERM_EXPIRATION_DATE, 'MM/dd/YYYY'), ToDate('02/09/2015', 'MM/dd/YYYY')) > 0 
 --	AND  DaysBetween(ToDate(LICENSE_TERM_START_DATE, 'MM/dd/YYYY'), ToDate('02/09/2015', 'MM/dd/YYYY')) < 0;
 ;
+
+years = FOREACH origLicenses GENERATE GetYear(ToDate(LICENSE_TERM_START_DATE, 'MM/dd/YYYY')) AS year:int;
+distinctYears = DISTINCT years;
+STORE distinctYears INTO 'output/years' USING org.apache.pig.piggybank.storage.CSVExcelStorage;
 
 groceriesWithHeader = load '$groceryFilename' USING org.apache.pig.piggybank.storage.CSVExcelStorage as (
 	G_STORE_NAME:chararray,	
@@ -68,7 +73,15 @@ groceries = FILTER groceriesWithHeader by G_STORE_NAME != 'STORE_NAME';
 
 groceryJoin = JOIN  origLicenses BY LICENSE_NUMBER LEFT OUTER, groceries BY G_LICENSE_ID;
 
-$licenses = FOREACH groceryJoin GENERATE 
+fullListYearCross = CROSS groceryJoin, distinctYears;
+
+businessListByYear = FILTER fullListYearCross BY 
+	GetYear(ToDate(LICENSE_TERM_EXPIRATION_DATE, 'MM/dd/YYYY')) > macro_BusinessLicenseReader_distinctYears_0::year 
+	AND  GetYear(ToDate(LICENSE_TERM_START_DATE, 'MM/dd/YYYY')) <= macro_BusinessLicenseReader_distinctYears_0::year;
+
+
+$licenses = FOREACH businessListByYear GENERATE 
+	macro_BusinessLicenseReader_distinctYears_0::year AS YEAR,
 	ID,
 	LICENSE_ID,
 	ACCOUNT_NUMBER,
@@ -83,7 +96,7 @@ $licenses = FOREACH groceryJoin GENERATE
 	PRECINCT,
 	POLICE_DISTRICT,
 	LICENSE_CODE,	
-	(G_STORE_NAME IS NOT NULL ? 'Grocery' : LICENSE_DESCRIPTION) AS LICENSE_DESCRIPTION,	
+	(G_STORE_NAME IS NOT NULL AND G_SQUARE_FEET > 8000 ? 'Grocery' : LICENSE_DESCRIPTION) AS LICENSE_DESCRIPTION,	
 	LICENSE_NUMBER,
 	APPLICATION_TYPE,
 	APPLICATION_CREATED_DATE,
